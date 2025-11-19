@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#FFB6C1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="เกมเคมี">
+    <title>เกมเคมีสนุกๆ - Chemistry Quiz Game</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            animation: backgroundShift 30s ease-in-out infinite alternate;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            touch-action: pan-y;
+        }
+
+        html {
+            height: -webkit-fill-available;
+        }
+
+        @keyframes backgroundShift {
+            0% { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            25% { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+            50% { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+            75% { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+            100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        }
+
+        .container {
+            max-width: 450px;
+            width: 100%;
+            height: 100vh;
+            height: -webkit-fill-available;
+            max-height: 100vh;
+            max-height: -webkit-fill-available;
+            background: rgba(255, 240, 245, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 0;
+            padding: 20px;
+            box-shadow: none;
+            text-align: center;
+            border: none;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                border-radius: 25px;
+                max-height: 90vh;
+                height: auto;
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
+                border: 2px solid rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        .logo {
+            font-size: 4em;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 30px;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+            font-weight: 700;
+        }
+
+        p {
+            color: #333;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+
+        .game-screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+            flex: 1;
+            width: 100%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .game-screen.active {
+            display: block;
+        }
+
+        .start-btn, .mode-btn, .restart-btn, .back-btn {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border: none;
+            padding: 18px 35px;
+            border-radius: 30px;
+            color: white;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 12px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .start-btn:active, .mode-btn:active, .restart-btn:active, .back-btn:active {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+        }
+
+        .mode-select {
+            display: grid;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .mode-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            font-size: 1.1em;
+            padding: 20px;
+            line-height: 1.3;
+        }
+
+        .mode-btn:nth-child(1) {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+        }
+
+        .mode-btn:nth-child(2) {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+        }
+
+        .mode-btn:nth-child(3) {
+            background: linear-gradient(45deg, #43e97b, #38f9d7);
+        }
+
+        .question-counter {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #FFD700;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .timer {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ff1744;
+            margin-bottom: 25px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.6);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .question {
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            font-weight: 600;
+            color: #333;
+            text-shadow: none;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option {
+            background: rgba(255, 192, 203, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid rgba(255, 182, 193, 0.8);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .option:nth-child(1) {
+            background: rgba(255, 192, 203, 0.8);
+            border-color: rgba(255, 182, 193, 1);
+        }
+
+        .option:nth-child(2) {
+            background: rgba(255, 182, 193, 0.8);
+            border-color: rgba(255, 192, 203, 1);
+        }
+
+        .option:nth-child(3) {
+            background: rgba(255, 160, 180, 0.8);
+            border-color: rgba(255, 170, 190, 1);
+        }
+
+        .option:nth-child(4) {
+            background: rgba(255, 170, 190, 0.8);
+            border-color: rgba(255, 160, 180, 1);
+        }
+
+        .option:active {
+            background: rgba(255, 150, 170, 0.9);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .option.correct {
+            background: linear-gradient(45deg, #4caf50, #8bc34a);
+            border-color: #2e7d32;
+            animation: correctPulse 0.6s ease-in-out;
+        }
+
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .option.wrong {
+            background: linear-gradient(45deg, #f44336, #e57373);
+            border-color: #c62828;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .score {
+            font-size: 1.5em;
+            margin: 20px 0;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .final-score {
+            font-size: 3.5em;
+            margin: 25px 0;
+            color: #FFD700;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+            animation: bounce 1s ease-in-out;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 5px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+
+        .mode-description {
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 10px;
+            line-height: 1.3;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            font-weight: 500;
+        }
+
+        .back-btn {
+            background: linear-gradient(45deg, #757575, #9e9e9e);
+            font-size: 1em;
+            padding: 12px 25px;
+        }
+
+        .result-message {
+            font-size: 1.3em;
+            margin: 25px 0;
+            line-height: 1.4;
+            color: #333;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            font-weight: 600;
+        }
+
+        .stats {
+            background: rgba(255, 255, 255, 0.4);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats div {
+            color: #333;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .question {
+                font-size: 1.2em;
+                padding: 20px;
+            }
+            .logo {
+                font-size: 3em;
+            }
+            .start-btn, .mode-btn, .restart-btn {
+                font-size: 1.1em;
+                padding: 15px 25px;
+            }
+            .option {
+                font-size: 1em;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- หน้าแรก -->
+        <div id="welcomeScreen" class="game-screen active">
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px 0;">
+                <div class="logo" style="margin-bottom: 20px;">⚗️</div>
+                <h1 style="margin-bottom: 20px;">เกมเคมีสนุกๆ</h1>
+                <p style="font-size: 1.1em; margin: 0 0 30px 0; line-height: 1.6; max-width: 320px;">
+                    เรียนรู้เคมีไปพร้อมกับเล่นเกม!<br>
+                    พร้อมทดสอบความรู้กันแล้วไหม?
+                </p>
+                
+                <div style="background: rgba(255, 255, 255, 0.3); padding: 20px; border-radius: 20px; margin-bottom: 30px; max-width: 320px; width: 100%;">
+                    <div style="display: grid; gap: 12px; font-size: 0.95em; text-align: left; color: #333; font-weight: 500;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.3em;">⏱️</span>
+                            <span>ข้อละ 10 วินาที</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.3em;">🎯</span>
+                            <span>รวม 10 คำถาม</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.3em;">🎲</span>
+                            <span>คำถามสุ่มทุกครั้ง</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.3em;">🏆</span>
+                            <span>3 โหมดความสนุก</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="start-btn" onclick="showModeSelect()" style="font-size: 1.4em; padding: 20px 50px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">🎮 เริ่มเล่นเกม</button>
+            </div>
+        </div>
+
+        <!-- หน้าเลือกโหมด -->
+        <div id="modeScreen" class="game-screen">
+            <h1>เลือกโหมดเกม</h1>
+            <div class="mode-select">
+                <button class="mode-btn" onclick="startGame('elements')">
+                    🧪 โหมดตารางธาตุ
+                    <div class="mode-description">ทายชื่อธาตุจากสัญลักษณ์</div>
+                </button>
+                <button class="mode-btn" onclick="startGame('carbon')">
+                    ⛓️ โหมดนับคาร์บอน
+                    <div class="mode-description">อ่านชื่อสารจากจำนวนคาร์บอน</div>
+                </button>
+                <button class="mode-btn" onclick="startGame('mass')">
+                    ⚖️ โหมดมวลโมเลกุล
+                    <div class="mode-description">คำนวณมวลโมเลกุลของสาร</div>
+                </button>
+            </div>
+            <button class="back-btn" onclick="goWelcome()">← กลับ</button>
+        </div>
+
+        <!-- หน้าเล่นเกม -->
+        <div id="gameScreen" class="game-screen">
+            <div style="position: relative; padding-top: 50px;">
+                <button class="back-btn" onclick="showModeSelect()" style="position: absolute; top: 5px; left: 5px; padding: 8px 15px; font-size: 0.85em; z-index: 10;">← เลือกโหมดใหม่</button>
+                <div class="question-counter" id="questionCounter" style="margin-top: 10px;"></div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            <div class="timer" id="timer">10</div>
+            <div class="score">คะแนน: <span id="currentScore">0</span> / 10</div>
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+        </div>
+
+        <!-- หน้าผลลัพธ์ -->
+        <div id="resultScreen" class="game-screen">
+            <div class="logo">🏆</div>
+            <h1>เกมจบแล้ว!</h1>
+            <div class="final-score" id="finalScore"></div>
+            <div class="stats" id="gameStats"></div>
+            <div class="result-message" id="resultMessage"></div>
+            <button class="restart-btn" onclick="startGame(lastMode)">🔄 เล่นโหมดเดิมอีกครั้ง</button>
+            <button class="restart-btn" onclick="showModeSelect()">🎮 เลือกโหมดใหม่</button>
+            <button class="back-btn" onclick="goWelcome()">🏠 กลับหน้าแรก</button>
+        </div>
+    </div>
+
+    <script>
+        const gameData = {
+            elements: {
+                title: "โหมดตารางธาตุ",
+                questions: [
+                    { question: "H คือสัญลักษณ์ของธาตุใด?", options: ["ไฮโดรเจน", "ฮีเลียม", "ฮาฟเนียม", "โฮลเมียม"], correct: 0 },
+                    { question: "O คือสัญลักษณ์ของธาตุใด?", options: ["ออสเมียม", "ออกซิเจน", "ออแกนเนสอน", "ออเรียม"], correct: 1 },
+                    { question: "C คือสัญลักษณ์ของธาตุใด?", options: ["แคลเซียม", "คาดเมียม", "คาร์บอน", "เซเรียม"], correct: 2 },
+                    { question: "Na คือสัญลักษณ์ของธาตุใด?", options: ["โซเดียม", "นิกเกิล", "นีโอน", "นิโอเบียม"], correct: 0 },
+                    { question: "Cl คือสัญลักษณ์ของธาตุใด?", options: ["แคลเซียม", "คาร์บอน", "คลอรีน", "โครเมียม"], correct: 2 },
+                    { question: "Fe คือสัญลักษณ์ของธาตุใด?", options: ["เหล็ก", "ฟลูออรีน", "ฟรานเซียม", "เฟอร์เมียม"], correct: 0 },
+                    { question: "Au คือสัญลักษณ์ของธาตุใด?", options: ["เงิน", "อะลูมิเนียม", "ทอง", "อาร์เซนิก"], correct: 2 },
+                    { question: "Ag คือสัญลักษณ์ของธาตุใด?", options: ["เงิน", "ทอง", "อาร์กอน", "อะสทาทีน"], correct: 0 },
+                    { question: "N คือสัญลักษณ์ของธาตุใด?", options: ["นีออน", "ไนโตรเจน", "นิกเกิล", "โนเบเลียม"], correct: 1 },
+                    { question: "S คือสัญลักษณ์ของธาตุใด?", options: ["ซิลิกอน", "เงิน", "กำมะถัน", "สแกนเดียม"], correct: 2 },
+                    { question: "He คือสัญลักษณ์ของธาตุใด?", options: ["ไฮโดรเจน", "ฮีเลียม", "ฮาฟเนียม", "โฮลเมียม"], correct: 1 },
+                    { question: "Ca คือสัญลักษณ์ของธาตุใด?", options: ["แคลเซียม", "คาร์บอน", "คลอรีน", "โครเมียม"], correct: 0 },
+                    { question: "Mg คือสัญลักษณ์ของธาตุใด?", options: ["แมงกานีส", "แมกนีเซียม", "ปรอท", "โมลิบดีนัม"], correct: 1 },
+                    { question: "K คือสัญลักษณ์ของธาตุใด?", options: ["โพแทสเซียม", "คริปทอน", "แคลเซียม", "คาร์บอน"], correct: 0 },
+                    { question: "P คือสัญลักษณ์ของธาตุใด?", options: ["แพลตินัม", "โพแทสเซียม", "ฟอสฟอรัส", "พาลาเดียม"], correct: 2 },
+                    { question: "Cu คือสัญลักษณ์ของธาตุใด?", options: ["ทองแดง", "แคลเซียม", "คาร์บอน", "คิวเรียม"], correct: 0 },
+                    { question: "Zn คือสัญลักษณ์ของธาตุใด?", options: ["เซนอน", "ซิงก์", "ซิโลเนียม", "เซอร์โคเนียม"], correct: 1 },
+                    { question: "Al คือสัญลักษณ์ของธาตุใด?", options: ["อาร์เซนิก", "อลูมิเนียม", "อาร์กอน", "แอสทาทีน"], correct: 1 },
+                    { question: "Si คือสัญลักษณ์ของธาตุใด?", options: ["เงิน", "ซิลิกอน", "โซเดียม", "กำมะถัน"], correct: 1 },
+                    { question: "Pb คือสัญลักษณ์ของธาตุใด?", options: ["ฟอสฟอรัส", "โพแทสเซียม", "ตะกั่ว", "แพลตินัม"], correct: 2 }
+                ]
+            },
+            carbon: { title: "โหมดนับคาร์บอน", questions: [] },
+            mass: {
+                title: "โหมดมวลโมเลกุล",
+                questions: [
+                    { question: "มวลโมเลกุลของ H2O คือเท่าใด? (H=1, O=16)", options: ["16", "17", "18", "19"], correct: 2 },
+                    { question: "มวลโมเลกุลของ CO2 คือเท่าใด? (C=12, O=16)", options: ["44", "28", "32", "48"], correct: 0 },
+                    { question: "มวลโมเลกุลของ NaCl คือเท่าใด? (Na=23, Cl=35.5)", options: ["58", "58.5", "59", "57.5"], correct: 1 },
+                    { question: "มวลโมเลกุลของ CH4 คือเท่าใด? (C=12, H=1)", options: ["15", "16", "17", "14"], correct: 1 },
+                    { question: "มวลโมเลกุลของ NH3 คือเท่าใด? (N=14, H=1)", options: ["17", "16", "18", "15"], correct: 0 },
+                    { question: "มวลโมเลกุลของ O2 คือเท่าใด? (O=16)", options: ["16", "32", "8", "24"], correct: 1 },
+                    { question: "มวลโมเลกุลของ CaCO3 คือเท่าใด? (Ca=40, C=12, O=16)", options: ["100", "96", "104", "108"], correct: 0 },
+                    { question: "มวลโมเลกุลของ H2SO4 คือเท่าใด? (H=1, S=32, O=16)", options: ["96", "98", "94", "100"], correct: 1 },
+                    { question: "มวลโมเลกุลของ C2H6 คือเท่าใด? (C=12, H=1)", options: ["28", "30", "26", "32"], correct: 1 },
+                    { question: "มวลโมเลกุลของ CaO คือเท่าใด? (Ca=40, O=16)", options: ["56", "54", "58", "52"], correct: 0 },
+                    { question: "มวลโมเลกุลของ N2 คือเท่าใด? (N=14)", options: ["14", "28", "7", "21"], correct: 1 },
+                    { question: "มวลโมเลกุลของ HCl คือเท่าใด? (H=1, Cl=35.5)", options: ["35.5", "36.5", "34.5", "37.5"], correct: 1 },
+                    { question: "มวลโมเลกุลของ MgO คือเท่าใด? (Mg=24, O=16)", options: ["38", "40", "42", "36"], correct: 1 },
+                    { question: "มวลโมเลกุลของ NaOH คือเท่าใด? (Na=23, O=16, H=1)", options: ["39", "40", "41", "38"], correct: 1 },
+                    { question: "มวลโมเลกุลของ C3H8 คือเท่าใด? (C=12, H=1)", options: ["42", "44", "40", "46"], correct: 1 },
+                    { question: "มวลโมเลกุลของ SO2 คือเท่าใด? (S=32, O=16)", options: ["62", "64", "60", "66"], correct: 1 },
+                    { question: "มวลโมเลกุลของ KCl คือเท่าใด? (K=39, Cl=35.5)", options: ["73.5", "74.5", "72.5", "75.5"], correct: 1 },
+                    { question: "มวลโมเลกุลของ C6H12O6 คือเท่าใด? (C=12, H=1, O=16)", options: ["178", "180", "182", "176"], correct: 1 },
+                    { question: "มวลโมเลกุลของ Al2O3 คือเท่าใด? (Al=27, O=16)", options: ["100", "102", "104", "98"], correct: 1 },
+                    { question: "มวลโมเลกุลของ FeCl3 คือเท่าใด? (Fe=56, Cl=35.5)", options: ["162", "162.5", "163", "161.5"], correct: 1 }
+                ]
+            }
+        };
+
+        const carbonNames = {1: "Meth", 2: "Eth", 3: "Prop", 4: "But", 5: "Pent", 6: "Hex", 7: "Hept", 8: "Oct", 9: "Non", 10: "Dec"};
+
+        function generateCarbonQuestions() {
+            const questions = [];
+            const usedNumbers = [];
+            
+            // สร้างแค่ 10 ข้อ ไม่ซ้ำ
+            while (questions.length < 10) {
+                const carbonCount = Math.floor(Math.random() * 10) + 1;
+                
+                // ถ้าเลขนี้ยังไม่เคยใช้
+                if (!usedNumbers.includes(carbonCount)) {
+                    usedNumbers.push(carbonCount);
+                    
+                    const correctAnswer = carbonNames[carbonCount];
+                    const wrongOptions = [];
+                    
+                    // สร้างตัวเลือกผิด 3 ตัว
+                    while (wrongOptions.length < 3) {
+                        const randomNum = Math.floor(Math.random() * 10) + 1;
+                        const wrongAnswer = carbonNames[randomNum];
+                        if (wrongAnswer !== correctAnswer && !wrongOptions.includes(wrongAnswer)) {
+                            wrongOptions.push(wrongAnswer);
+                        }
+                    }
+                    
+                    const options = [correctAnswer, ...wrongOptions];
+                    const shuffled = [...options].sort(() => Math.random() - 0.5);
+                    const correctIndex = shuffled.indexOf(correctAnswer);
+                    
+                    questions.push({
+                        question: `สารประกอบที่มีคาร์บอน ${carbonCount} ตัว จะอ่านว่าอะไร?`,
+                        options: shuffled,
+                        correct: correctIndex
+                    });
+                }
+            }
+            
+            return questions;
+        }
+
+        gameData.carbon.questions = generateCarbonQuestions();
+
+        let currentMode = '';
+        let lastMode = '';
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = 10;
+        let timer;
+        let gameActive = false;
+        const questionsPerGame = 10;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.game-screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function goWelcome() {
+            showScreen('welcomeScreen');
+        }
+
+        function showModeSelect() {
+            showScreen('modeScreen');
+            clearInterval(timer);
+        }
+
+        function startGame(mode) {
+            currentMode = mode;
+            lastMode = mode;
+            
+            if (mode === 'carbon') {
+                gameData.carbon.questions = generateCarbonQuestions();
+            }
+            
+            const allQuestions = [...gameData[mode].questions];
+            const shuffled = allQuestions.sort(() => Math.random() - 0.5);
+            currentQuestions = shuffled.slice(0, questionsPerGame);
+            
+            currentQuestionIndex = 0;
+            score = 0;
+            gameActive = true;
+            
+            showScreen('gameScreen');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQuestionIndex >= currentQuestions.length) {
+                endGame();
+                return;
+            }
+
+            const question = currentQuestions[currentQuestionIndex];
+            
+            document.getElementById('questionCounter').textContent = 
+                `${gameData[currentMode].title} | คำถามที่ ${currentQuestionIndex + 1}/${currentQuestions.length}`;
+            
+            const progress = ((currentQuestionIndex) / currentQuestions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            document.getElementById('question').textContent = question.question;
+            document.getElementById('currentScore').textContent = score;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            timeLeft = 10;
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = timeLeft;
+            timerElement.style.color = '#4caf50';
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                
+                if (timeLeft > 5) {
+                    timerElement.style.color = '#4caf50';
+                } else if (timeLeft > 3) {
+                    timerElement.style.color = '#ff9800';
+                } else {
+                    timerElement.style.color = '#ff1744';
+                    timerElement.style.animation = 'pulse 0.5s infinite';
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    selectAnswer(-1);
+                }
+            }, 1000);
+        }
+
+        function selectAnswer(selectedIndex) {
+            if (!gameActive) return;
+            
+            clearInterval(timer);
+            gameActive = false;
+            
+            const question = currentQuestions[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+            
+            options.forEach((option, index) => {
+                if (index === question.correct) {
+                    option.classList.add('correct');
+                } else if (index === selectedIndex) {
+                    option.classList.add('wrong');
+                }
+                option.onclick = null;
+            });
+
+            if (selectedIndex === question.correct) {
+                score += 1;
+                document.getElementById('currentScore').textContent = score;
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                gameActive = true;
+                showQuestion();
+            }, 1500);
+        }
+
+        function endGame() {
+            const maxScore = 10;
+            const percentage = Math.round((score / maxScore) * 100);
+            
+            document.getElementById('finalScore').textContent = `${score} / ${maxScore}`;
+            
+            const wrongAnswers = maxScore - score;
+            
+            document.getElementById('gameStats').innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: center;">
+                    <div>
+                        <div style="font-size: 2em; color: #4caf50;">✓ ${score}</div>
+                        <div>ตอบถูก</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2em; color: #ff5722;">✗ ${wrongAnswers}</div>
+                        <div>ตอบผิด</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; font-size: 1.2em;">
+                    ความแม่นยำ: <span style="color: #FFD700;">${percentage}%</span>
+                </div>
+            `;
+            
+            let message = '';
+            let emoji = '';
+            if (score === 10) {
+                message = 'เพอร์เฟค! คุณเก่งมากจริงๆ! 🎊';
+                emoji = '🌟✨🏆';
+            } else if (score >= 8) {
+                message = 'ยอดเยี่ยมมาก! คุณเป็นเซียนเคมีจริงๆ!';
+                emoji = '🎉👏⭐';
+            } else if (score >= 6) {
+                message = 'เก่งมาก! ความรู้เคมีคุณดีจริงๆ!';
+                emoji = '😊👍💯';
+            } else if (score >= 4) {
+                message = 'ดีแล้วครับ! แต่ยังฝึกได้อีก!';
+                emoji = '💪😄📚';
+            } else {
+                message = 'อย่าท้อนะครับ! ลองเล่นใหม่ดู!';
+                emoji = '💪🎯📖';
+            }
+            
+            document.getElementById('resultMessage').innerHTML = 
+                `<div style="font-size: 1.8em; margin-bottom: 15px;">${emoji}</div>
+                 <div>${message}</div>
+                 <div style="margin-top: 15px; font-size: 0.9em; opacity: 0.8;">
+                    คำถามในแต่ละครั้งจะสุ่มใหม่<br>ลองเล่นอีกครั้งเพื่อฝึกฝนเพิ่มเติม!
+                 </div>`;
+            
+            showScreen('resultScreen');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('click', (e) => {
+                if (e.target.matches('button')) {
+                    e.target.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        e.target.style.transform = '';
+                    }, 150);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
